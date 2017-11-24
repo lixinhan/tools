@@ -17,5 +17,29 @@ class Tools
     public static function isAjax(){
         return (isset($_SERVER['HTTP_X_REQUESTED_WITH'])&&strtoupper($_SERVER['HTTP_X_REQUESTED_WITH'])==='XMLHTTPREQUEST')?true:false;
     }
-
+    /** 获取指定parentid的树状结构数据
+     * @param $parentid  顶级ID
+     * @param $data      列表数据
+     * @param string $primaryIDKey 数据主键key
+     * @param string $parenIDtKey  父级主键key
+     * @param string $childrenKey  子节点数据key
+     * @param string $levelKey  代表层级的key
+     * @param int level  层级值
+     * @return array
+     */
+    public static function getTree($parentid, $data, $primaryIDKey='id', $parenIDtKey='parent_id', $childrenKey='children',$levelKey='_level',$level=0){
+        $returnData=[];
+        foreach ($data as $key=>$value){
+            if($parentid==$value[$parenIDtKey]){
+                unset($data[$key]);
+                $children=self::getTree($value[$primaryIDKey],$data,$primaryIDKey,$parenIDtKey,$childrenKey,$levelKey,$level+1);
+                if(isset($children)){
+                    $value[$childrenKey]=$children;
+                }
+                $value[$levelKey]=$level;
+                $returnData[]=$value;
+            }
+        }
+        return $returnData;
+    }
 }
